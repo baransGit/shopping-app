@@ -1,0 +1,36 @@
+/* src/features/cart/components/DrawerHeader/drawerHeader.module.css */
+.header {
+    padding: 1rem;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+    position: relative;
+}
+
+.title {                 
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.closeButton {
+    position: absolute;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+    background: #eeeeee;
+}

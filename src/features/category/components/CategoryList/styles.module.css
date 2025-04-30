@@ -1,0 +1,42 @@
+/* src/features/category/components/CategoryList/styles.module.css */
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.groupSection {
+    display: flex;          /* Grup başlığı ve kategorileri yan yana */
+    margin-bottom: 3rem;    /* Gruplar arası boşluk */
+}
+
+.groupTitle {
+    width: 200px;          
+    padding-right: 2rem;   
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4cf414;        
+    padding: 2rem;
+    border-radius: 8px;    
+    text-align: center;    
+}
+
+.categoryGrid {
+    flex: 1;              /* Kalan alanı doldur */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .groupSection {
+        flex-direction: column;  /* Mobilde alt alta */
+    }
+
+    .groupTitle {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 1rem;
+    }
+}

@@ -1,0 +1,18 @@
+/* src/features/cart/components/DrawerContent/drawerContent.module.css */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 2rem;  /* 👈 Alt kısımda extra padding */
+    height: calc(80vh - 180px);  /* 👈 Header ve footer için alan bırak */
+}
+
+/* CartItem için bottom margin ekle */
+.cartItem {
+    margin-bottom: 1rem;  /* 👈 Her item arasında boşluk */
+}
+
+/* Son item için extra margin */
+.cartItem:last-child {
+    margin-bottom: 2rem;  /* 👈 Son item için daha fazla boşluk */
+}

@@ -1,0 +1,111 @@
+/* src/features/cart/components/CartItem/cartItem.module.css */
+.cartItem {
+  display: flex;
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+  gap: 1rem;
+  align-items: center;
+}
+
+.loadingItem,
+.errorItem {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 100px;
+}
+
+.loadingText,
+.errorText {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.itemImage {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #f8f9fa;
+  padding: 0.25rem;
+}
+
+.itemDetails {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.itemDetails h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemPrice {
+  color: #007bff;
+  font-weight: 600;
+  margin: 0;
+}
+
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quantityButton {
+  min-width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity span {
+  min-width: 24px;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.removeButton {
+  color: #dc3545;
+  padding: 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  align-self: flex-start;
+}
+
+.removeButton:hover {
+  opacity: 1;
+}
