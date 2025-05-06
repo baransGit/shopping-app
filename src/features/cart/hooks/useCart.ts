@@ -20,15 +20,15 @@ export const useCart = () => {
   const { items, isDrawerOpen } = useSelector((state: RootState) => state.cart);
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
 
+  console.log("useCart - products loading:", isProductsLoading);
+  console.log("useCart - products data:", products);
+
   const subTotal = useMemo(
     () => calculations.calculateSubTotal(items, products),
     [items, products]
   );
 
-  const itemCount = useMemo(
-    () => calculations.calculateTotalItems(items),
-    [items]
-  );
+  const itemCount = calculations.calculateTotalItems(items);
 
   return {
     items,

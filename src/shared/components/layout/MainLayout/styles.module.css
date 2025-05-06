@@ -1,37 +1,37 @@
 .layout {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .mainContent {
-    flex: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Mobile için media queries ekleyelim */
+/* Media queries for mobile */
 @media (max-width: 768px) {
-    .mainContent {
-        padding: 1rem;  /* Mobile'da daha az padding */
-    }
+  .mainContent {
+    padding: 0.5rem; /* Less padding on mobile */
+  }
 }
 
 @media (max-width: 480px) {
-    .mainContent {
-        padding: 0.5rem;  /* Küçük ekranlarda daha da az padding */
-    }
+  .mainContent {
+    padding: 0.25rem; /* Even less padding on small screens */
+  }
 }
 
-/* Tablet için */
+/* For tablets */
 @media (min-width: 769px) and (max-width: 1024px) {
-    .mainContent {
-        max-width: 90%;  /* Tablet'te biraz daha geniş */
-    }
+  .mainContent {
+    max-width: 90%; /* Wider on tablets */
+  }
 }

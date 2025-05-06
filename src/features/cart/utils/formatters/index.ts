@@ -1,8 +1,7 @@
+export const formatCartSummary = (itemCount: number): string => {
+  return `Cart (${itemCount}) items `;
+};
 
-export const formatCartSummary = (itemCount:number)=>{
-    return `Cart (${itemCount}) items `
-}
-
-export const formatQuantity = (quantity:number)=>{
-    return `Quantity: ${quantity}`
-}
+export const formatQuantity = (quantity: number): string => {
+  return `Quantity: ${quantity}`;
+};

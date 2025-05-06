@@ -1,43 +1,36 @@
-import { useParams } from 'react-router-dom'
-import { useNavigation } from '../../../../shared/hooks/useNavigation'
-import {useProducts} from '../../hooks/useProducts'
-import { ProductCard } from "../../components/ProductCard"
-import {Product} from '../../types/Product'
+import { useParams } from "react-router-dom";
+import { useNavigation } from "../../../../shared/hooks/useNavigation";
+import { useProducts } from "../../hooks/useProducts";
+import { ProductCard } from "../../components/ProductCard";
+import { Product } from "../../types/Product";
+import styles from "./styles.module.css";
 
-import styles from './styles.module.css'
+export const ProductList = () => {
+  const { categorySlug } = useParams();
+  const { goToProductDetail } = useNavigation();
+  const { data: products, isLoading, error } = useProducts(categorySlug);
 
+  if (isLoading) return <div>Loading products...</div>;
 
+  if (error) {
+    return <div>{(error as Error).message || "Error loading products"}</div>;
+  }
 
-export const ProductList = ()=>{
-    const {groupId} =useParams()
-    const {goToProductDetail} = useNavigation()
-    const {data:products, isLoading,error} =useProducts(groupId)
+  if (!products || products.length === 0) {
+    return <div>No products found</div>;
+  }
 
-    console.log('GroupId:', groupId)  
-    console.log('Products:', products) 
-    if (isLoading) return <div>Loading...</div>
-    if (error) return <div>Error loading products</div>
-    if (!products) return <div>No products found</div> // Ürün y
-console.log('Products in component:', products) // Debug için
-
-    return (
-        <div className={styles.container}>
-            <div className={styles.grid}>
-            {products?.map((product:Product)=>(
-                <ProductCard
-                    key={product.id}
-                    product ={product}
-                    onClick= {()=>goToProductDetail(product.id)}
-                />
-            ))}
-            </div>
-        </div>
-
-
-
-
-    )
-
-
-
-}
+  return (
+    <div className={styles.container}>
+      <div className={styles.grid}>
+        {products.map((product: Product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onClick={() => goToProductDetail(product.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
