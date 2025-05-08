@@ -22,4 +22,10 @@ export const ROUTES = {
     LIST: "/",
     PRODUCTS: "/category/:categorySlug", // Dynamic route with category slug parameter
   },
+  LOGIN: {
+    LIST: "/login",
+  },
+  REGISTER: {
+    LIST: "/register",
+  },
 } as const;

@@ -4,10 +4,12 @@ import { RootState } from "../../../../app/store/rootReducer";
 import { setDrawerOpen } from "../../../../features/cart/slice";
 import { CartDrawer } from "../../../../features/cart";
 import { useCart } from "../../../../features/cart/hooks/useCart";
+import { useAuth } from "../../../../features/auth/hooks/useAuth";
 import styles from "./styles.module.css";
 
 export const Header = () => {
   const { itemCount } = useCart();
+  const { isAuthenticated } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -18,15 +20,17 @@ export const Header = () => {
           Shopping App
         </button>
         <nav>
-          <button
-            onClick={() => dispatch(setDrawerOpen(true))}
-            className={styles.cartButton}
-          >
-            My Cart ({itemCount})
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={() => dispatch(setDrawerOpen(true))}
+              className={styles.cartButton}
+            >
+              My Cart ({itemCount})
+            </button>
+          )}
         </nav>
       </header>
-      <CartDrawer />
+      {isAuthenticated && <CartDrawer />}
     </>
   );
 };

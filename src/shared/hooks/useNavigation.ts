@@ -30,5 +30,7 @@ export const useNavigation = () => {
       navigate(
         ROUTES.CATEGORIES.PRODUCTS.replace(":categorySlug", categorySlug)
       ),
+    goToLogin: () => navigate(ROUTES.LOGIN.LIST),
+    goToRegister: () => navigate(ROUTES.REGISTER.LIST),
   };
 };
