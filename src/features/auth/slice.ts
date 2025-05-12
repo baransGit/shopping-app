@@ -7,6 +7,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  registrationLoading: boolean;
+  registrationError: string | null;
 }
 const initialState: AuthState = {
   user: null,
@@ -14,6 +16,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  registrationLoading: false,
+  registrationError: null,
 };
 
 const AuthSlice = createSlice({
@@ -32,15 +36,35 @@ const AuthSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
+    setLoginLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setError: (state, action: PayloadAction<string | null>) => {
+    setLoginError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
+    },
+    setRegistrationLoading: (state, action: PayloadAction<boolean>) => {
+      state.registrationLoading = action.payload;
+    },
+    setRegistrationError: (state, action: PayloadAction<string | null>) => {
+      state.registrationError = action.payload;
+    },
+    registrationSuccess: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.registrationLoading = false;
+      state.registrationError = null;
     },
   },
 });
 
-export const { setUser, setToken, logout, setLoading, setError } =
-  AuthSlice.actions;
+export const {
+  setUser,
+  setToken,
+  logout,
+  setLoginLoading,
+  setLoginError,
+  setRegistrationError,
+  setRegistrationLoading,
+  registrationSuccess,
+} = AuthSlice.actions;
 export default AuthSlice.reducer;

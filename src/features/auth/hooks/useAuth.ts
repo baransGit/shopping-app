@@ -1,8 +1,21 @@
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
 import { authAPI } from "../api/authApi";
-import { LoginCredentials } from "../types/auth";
-import { setUser, setToken, logout, setLoading, setError } from "../slice";
+import {
+  LoginCredentials,
+  RegisterCredentials,
+  AuthError,
+  AuthSuccessResponse,
+} from "../types/auth";
+import {
+  setUser,
+  setToken,
+  logout,
+  setLoginLoading,
+  setLoginError,
+  setRegistrationError,
+  setRegistrationLoading,
+} from "../slice";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -11,15 +24,50 @@ export const useAuth = () => {
   );
   const login = async (credentials: LoginCredentials) => {
     try {
-      dispatch(setLoading(true));
-      dispatch(setError(null));
+      dispatch(setLoginLoading(true));
+      dispatch(setLoginError(null));
       const response = await authAPI.login(credentials);
-      dispatch(setUser(response.user));
-      dispatch(setToken(response.token));
+
+      if ("errors" in response) {
+        const errorMessage =
+          response.errors
+            ?.map((err: AuthError) => `${err.field}: ${err.message}`)
+            .join(", ") || response.message;
+        dispatch(setLoginError(errorMessage));
+        return;
+      }
+
+      const successResponse = response as AuthSuccessResponse;
+
+      dispatch(setUser(successResponse.user));
+      dispatch(setToken(successResponse.token));
     } catch (error) {
-      dispatch(setError("Login Failed"));
+      dispatch(setLoginError("Server Error :Login failed"));
     } finally {
-      dispatch(setLoading(false));
+      dispatch(setLoginLoading(false));
+    }
+  };
+
+  const register = async (credentials: RegisterCredentials) => {
+    try {
+      dispatch(setRegistrationLoading(true));
+      dispatch(setRegistrationError(null));
+      const response = await authAPI.register(credentials);
+      if ("errors" in response) {
+        const errorMessage =
+          response.errors
+            ?.map((err: AuthError) => `${err.field}:${err.message}`)
+            .join(", ") || response.message;
+        dispatch(setRegistrationError(errorMessage));
+        return;
+      }
+      const successResponse = response as AuthSuccessResponse;
+      dispatch(setUser(successResponse.user));
+      dispatch(setToken(successResponse.token));
+    } catch (error) {
+      dispatch(setRegistrationError("Registration Failed"));
+    } finally {
+      dispatch(setRegistrationLoading(false));
     }
   };
   const logoutUser = async () => {
@@ -30,13 +78,13 @@ export const useAuth = () => {
       console.error("Logout failed", error);
     }
   };
-
   return {
     user,
     isAuthenticated,
     loading,
     error,
     login,
+    register,
     logout: logoutUser,
   };
 };

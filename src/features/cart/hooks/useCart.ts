@@ -41,23 +41,16 @@ export const useCart = () => {
       getCartItemWithDetails(items, products, productId),
     products,
 
-    openDrawer: useCallback(() => dispatch(setDrawerOpen(true)), [dispatch]),
-    closeDrawer: useCallback(() => dispatch(setDrawerOpen(false)), [dispatch]),
-    addItem: useCallback(
-      (productId: number) => dispatch(addToCart(productId)),
-      [dispatch]
-    ),
-    removeItem: useCallback(
-      (productId: number) => dispatch(removeFromCart(productId)),
-      [dispatch]
-    ),
-    updateItemQuantity: useCallback(
-      (productId: number, quantity: number) => {
-        if (!isValidQuantity(quantity)) return;
-        dispatch(updateQuantity({ productId, quantity }));
-      },
-      [dispatch]
-    ),
-    clearItems: useCallback(() => dispatch(clearItems()), [dispatch]),
+    openDrawer: () => dispatch(setDrawerOpen(true)),
+    closeDrawer: () => dispatch(setDrawerOpen(false)),
+    addItem: (productId: number) => dispatch(addToCart(productId)),
+
+    removeItem: (productId: number) => dispatch(removeFromCart(productId)),
+    updateItemQuantity: (productId: number, quantity: number) => {
+      if (!isValidQuantity(quantity)) return;
+      dispatch(updateQuantity({ productId, quantity }));
+    },
+
+    clearItems: () => dispatch(clearItems()),
   };
 };

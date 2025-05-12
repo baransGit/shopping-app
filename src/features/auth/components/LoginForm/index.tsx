@@ -15,16 +15,17 @@ const validationSchema = Yup.object({
     .matches(/[0-9]/, "Password must contain at least one number")
     .required("Password is required"),
 });
+const initialValues = {
+  username: "",
+  password: "",
+};
 
 export const LoginForm = () => {
-  const { login, error: authError, isAuthenticated } = useAuth();
+  const { login, error: authError } = useAuth();
 
   return (
     <Formik
-      initialValues={{
-        username: "",
-        password: "",
-      }}
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting }) => {
         try {

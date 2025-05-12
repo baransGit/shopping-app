@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { LoginForm } from "../../components/LoginForm";
 
 import styles from "./styles.module.css";
@@ -9,9 +10,9 @@ export const LoginPage = () => {
       <LoginForm />
       <p className={styles.register}>
         Don't have an account?{" "}
-        <a href="/register" className="styles.link">
+        <Link to="/register" className={styles.link}>
           Register
-        </a>
+        </Link>
       </p>
     </div>
   );

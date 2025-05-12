@@ -1,5 +1,10 @@
 import { api } from "../../../shared/lib/axios";
-import { LoginCredentials, LoginResponse } from "../types/auth";
+import {
+  LoginCredentials,
+  LoginResponse,
+  RegisterCredentials,
+  RegisterResponse,
+} from "../types/auth";
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
@@ -12,5 +17,11 @@ export const authAPI = {
   },
   logout: async () => {
     await api.post("/auth/logout");
+  },
+  register: async (
+    credentials: RegisterCredentials
+  ): Promise<RegisterResponse> => {
+    const { data } = await api.post("/auth/register");
+    return data;
   },
 };

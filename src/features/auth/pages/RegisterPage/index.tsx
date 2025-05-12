@@ -1,14 +1,16 @@
 import styles from "./styles.module.css";
-
+import { Link } from "react-router-dom";
+import { RegisterForm } from "../../components/RegisterForm";
 export const RegisterPage = () => {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Kayıt Ol</h1>
+      <h1 className={styles.title}>Register</h1>
+      <RegisterForm />
       <p className={styles.login}>
-        Zaten hesabınız var mı?{" "}
-        <a href="/login" className={styles.link}>
-          Giriş Yap
-        </a>
+        Already have an account?{" "}
+        <Link to="/login" className={styles.link}>
+          Login
+        </Link>
       </p>
     </div>
   );

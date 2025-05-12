@@ -24,7 +24,7 @@ export const ProductDetail = () => {
   // Get product ID from URL parameters
   const { id } = useParams();
 
-  // Fetch product details and cart functionality
+  // Fetch product details and add item functionality
   const { data: product, isLoading } = useProduct(Number(id));
   const { addItem } = useCart();
 
