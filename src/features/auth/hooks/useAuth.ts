@@ -1,90 +1,51 @@
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../app/store";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { authAPI } from "../api/authApi";
 import {
   LoginCredentials,
+  LoginResponse,
   RegisterCredentials,
-  AuthError,
-  AuthSuccessResponse,
+  RegisterResponse,
+  User,
 } from "../types/auth";
-import {
-  setUser,
-  setToken,
-  logout,
-  setLoginLoading,
-  setLoginError,
-  setRegistrationError,
-  setRegistrationLoading,
-} from "../slice";
-
+import { useNavigation } from "../../../shared/hooks/useNavigation";
 export const useAuth = () => {
-  const dispatch = useDispatch();
-  const { user, isAuthenticated, loading, error } = useSelector(
-    (state: RootState) => state.auth
-  );
-  const login = async (credentials: LoginCredentials) => {
-    try {
-      dispatch(setLoginLoading(true));
-      dispatch(setLoginError(null));
-      const response = await authAPI.login(credentials);
-
-      if ("errors" in response) {
-        const errorMessage =
-          response.errors
-            ?.map((err: AuthError) => `${err.field}: ${err.message}`)
-            .join(", ") || response.message;
-        dispatch(setLoginError(errorMessage));
-        return;
+  const navigation = useNavigation();
+  const login = useMutation<LoginResponse, Error, LoginCredentials>({
+    mutationFn: (credentials) => authAPI.login(credentials),
+    onSuccess: (data) => {
+      if ("token" in data) {
+        localStorage.setItem("token", data.token);
+        navigation.goToHome();
       }
-
-      const successResponse = response as AuthSuccessResponse;
-
-      dispatch(setUser(successResponse.user));
-      dispatch(setToken(successResponse.token));
-    } catch (error) {
-      dispatch(setLoginError("Server Error :Login failed"));
-    } finally {
-      dispatch(setLoginLoading(false));
-    }
-  };
-
-  const register = async (credentials: RegisterCredentials) => {
-    try {
-      dispatch(setRegistrationLoading(true));
-      dispatch(setRegistrationError(null));
-      const response = await authAPI.register(credentials);
-      if ("errors" in response) {
-        const errorMessage =
-          response.errors
-            ?.map((err: AuthError) => `${err.field}:${err.message}`)
-            .join(", ") || response.message;
-        dispatch(setRegistrationError(errorMessage));
-        return;
+    },
+  });
+  const register = useMutation<RegisterResponse, Error, RegisterCredentials>({
+    mutationFn: (credentials) => authAPI.register(credentials),
+    onSuccess: (data) => {
+      if ("token" in data) {
+        localStorage.setItem("token", data.token);
+        navigation.goToHome();
       }
-      const successResponse = response as AuthSuccessResponse;
-      dispatch(setUser(successResponse.user));
-      dispatch(setToken(successResponse.token));
-    } catch (error) {
-      dispatch(setRegistrationError("Registration Failed"));
-    } finally {
-      dispatch(setRegistrationLoading(false));
-    }
-  };
-  const logoutUser = async () => {
-    try {
-      await authAPI.logout();
-      dispatch(logout());
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+    },
+  });
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ["user"],
+    queryFn: () => authAPI.getCurrentUser(),
+    enabled: !!localStorage.getItem("token"),
+  });
+  const logout = useMutation({
+    mutationFn: () => authAPI.logout(),
+    onSuccess: () => {
+      localStorage.removeItem("token");
+    },
+  });
+
   return {
-    user,
-    isAuthenticated,
-    loading,
-    error,
     login,
     register,
-    logout: logoutUser,
+    logout,
+    user,
+    isLoading,
+    isAuthenticated: !!user,
   };
 };

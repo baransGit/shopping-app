@@ -1,9 +1,8 @@
-import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "../../hooks/useAuth";
-import { Input } from "../../../../shared/components/Input";
-import styles from "./styles.module.css";
-import { Button } from "../../../../shared/components/Button";
+import { BaseAuthForm } from "../BaseAuthForm";
+import { LoginCredentials } from "../../types/auth";
+
 const validationSchema = Yup.object({
   username: Yup.string()
     .min(3, "Username must be at least 3 characters")
@@ -15,58 +14,21 @@ const validationSchema = Yup.object({
     .matches(/[0-9]/, "Password must contain at least one number")
     .required("Password is required"),
 });
-const initialValues = {
+
+const initialValues: LoginCredentials = {
   username: "",
   password: "",
 };
 
 export const LoginForm = () => {
-  const { login, error: authError } = useAuth();
+  const { login } = useAuth();
 
   return (
-    <Formik
+    <BaseAuthForm
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        try {
-          await login(values);
-        } catch (error) {
-          console.error("Login failed", error);
-        } finally {
-          setSubmitting(false);
-        }
-      }}
-    >
-      {({ isSubmitting, errors, touched }) => (
-        <Form className={styles.form}>
-          <Input
-            name="username"
-            type="text"
-            label="Username"
-            placeholder="Enter your username"
-            error={touched.username ? errors.username : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="password"
-            type="password"
-            label="Password"
-            placeholder="Enter your password"
-            error={touched.password ? errors.password : undefined}
-            useFormik={true}
-          />
-          {authError && (
-            <p className={styles.error}>
-              {authError === "Invalid credentials"
-                ? "Invalid username or password"
-                : "Login failed"}
-            </p>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Logging in..." : "Login"}
-          </Button>
-        </Form>
-      )}
-    </Formik>
+      mutation={login}
+      formType="login"
+    />
   );
 };

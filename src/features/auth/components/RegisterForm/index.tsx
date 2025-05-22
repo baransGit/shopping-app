@@ -1,10 +1,7 @@
-import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { Input } from "../../../../shared/components/Input";
-import { Button } from "../../../../shared/components/Button";
 import { useAuth } from "../../hooks/useAuth";
-import styles from "./styles.module.css";
-
+import { BaseAuthForm } from "../BaseAuthForm";
+import type { RegisterCredentials } from "../../types/auth";
 const validationSchema = Yup.object({
   username: Yup.string()
     .min(3, "Username must be at least 3 characters")
@@ -34,7 +31,8 @@ const validationSchema = Yup.object({
     )
     .required("Last name is required"),
 });
-const initialValues = {
+
+const initialValues: RegisterCredentials = {
   username: "",
   email: "",
   password: "",
@@ -44,96 +42,14 @@ const initialValues = {
 };
 
 export const RegisterForm = () => {
-  const { register, error: authError } = useAuth();
+  const { register } = useAuth();
+
   return (
-    <Formik
+    <BaseAuthForm
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={async (values, { setSubmitting }) => {
-        try {
-          await register(values);
-        } catch (error) {
-          console.error("Registration failed", error);
-        } finally {
-          setSubmitting(false);
-        }
-      }}
-    >
-      {({ isSubmitting, errors, touched }) => (
-        <Form className={styles.form}>
-          <Input
-            name="username"
-            type="text"
-            label="Username"
-            placeholder="Enter your username"
-            error={touched.username ? errors.username : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="email"
-            type="email"
-            label="Email"
-            placeholder="Enter your email"
-            error={touched.email ? errors.email : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="password"
-            type="password"
-            label="Password"
-            placeholder="Enter your password"
-            error={touched.password ? errors.password : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="confirmPassword"
-            type="password"
-            label="Confirm Password"
-            placeholder="Confirm your password"
-            error={touched.confirmPassword ? errors.confirmPassword : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="firstName"
-            type="text"
-            label="First Name"
-            placeholder="Enter your first name"
-            error={touched.firstName ? errors.firstName : undefined}
-            useFormik={true}
-          />
-          <Input
-            name="lastName"
-            type="text"
-            label="Last Name"
-            placeholder="Enter your last name"
-            error={touched.lastName ? errors.lastName : undefined}
-            useFormik={true}
-          />
-          {authError && (
-            <p className={styles.error}>
-              {(() => {
-                // Check username-related errors from API
-                if (authError.includes("username")) {
-                  return "This username is already taken";
-                }
-                // Check email-related errors from AP
-                if (authError.includes("email")) {
-                  return "This email is already registered";
-                }
-                // Check validation errors from API
-                if (authError.includes("validation")) {
-                  return "Please check your information";
-                }
-                // Return default error message if no specific error matched
-                return "Registration failed. Please try again.";
-              })()}
-            </p>
-          )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Registering..." : "Register"}
-          </Button>
-        </Form>
-      )}
-    </Formik>
+      mutation={register}
+      formType="register"
+    />
   );
 };

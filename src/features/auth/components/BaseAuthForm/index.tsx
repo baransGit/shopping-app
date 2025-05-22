@@ -1,23 +1,39 @@
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikErrors, FormikTouched } from "formik";
 import { Button } from "../../../../shared/components/Button";
 import { Input } from "../../../../shared/components/Input";
-import { LoginCredentials, RegisterCredentials } from "../../types/auth";
-interface BaseAuthFormProps {
-  initialValues: LoginCredentials | RegisterCredentials;
-  validationSchema: any;
-  onSubmit: (values: any) => Promise<void>;
-  formType: "login" | "register";
-  error?: string;
+import {
+  LoginCredentials,
+  RegisterCredentials,
+  LoginResponse,
+  RegisterResponse,
+} from "../../types/auth";
+import { UseMutationResult } from "@tanstack/react-query";
+import styles from "./styles.module.css";
+import { Link } from "react-router-dom";
+
+type AuthResponse = LoginResponse | RegisterResponse;
+
+interface InputField {
+  name: string;
+  type: "text" | "password" | "email";
+  label: string;
+  placeholder: string;
 }
 
-export const BaseAuthForm = ({
+interface BaseAuthFormProps<T extends Record<string, any>> {
+  initialValues: T;
+  validationSchema: any;
+  mutation: UseMutationResult<AuthResponse, Error, T>;
+  formType: "login" | "register";
+}
+
+export const BaseAuthForm = <T extends LoginCredentials | RegisterCredentials>({
   initialValues,
   validationSchema,
-  onSubmit,
+  mutation,
   formType,
-  error,
-}: BaseAuthFormProps) => {
-  const inputFields = {
+}: BaseAuthFormProps<T>) => {
+  const inputFields: Record<"login" | "register", InputField[]> = {
     login: [
       {
         name: "username",
@@ -70,51 +86,101 @@ export const BaseAuthForm = ({
         placeholder: "Enter your last name",
       },
     ],
-  };
+  } as const;
+
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onSubmit}
-    >
-      {({ isSubmitting, errors, touched }) => (
-        <Form className={styles.form}>
-          {inputFields[formType].map((field) => (
-            <Input
-              key={field.name}
-              name={field.name}
-              type={field.type}
-              label={field.label}
-              placeholder={`Enter your ${field.label.toLowerCase()}`}
-              error={touched[field.name] ? errors[field.name] : undefined}
-              useFormik={true}
-            />
-          ))}
-          {error && (
-            <p className={styles.error}>
-              {(() => {
-                if (error.includes("username")) {
-                  return "This username is already taken";
-                }
-                if (error.includes("email")) {
-                  return "This email is already registered";
-                }
-                if (error.includes("validation")) {
-                  return "Please check your information";
-                }
-                return formType === "login"
-                  ? "Invalid username or password"
-                  : "Registration failed. Please try again.";
-              })()}
+    <div className={styles.authContainer}>
+      <div className={styles.formWrapper}>
+        <h1 className={styles.title}>
+          {formType === "login" ? "Welcome Back" : "Create Account"}
+        </h1>
+        <Formik<T>
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              await mutation.mutateAsync(values);
+            } catch (error) {
+              console.error(`${formType} failed:`, error);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({
+            isSubmitting,
+            errors,
+            touched,
+          }: {
+            isSubmitting: boolean;
+            errors: FormikErrors<T>;
+            touched: FormikTouched<T>;
+          }) => (
+            <Form className={styles.form}>
+              {inputFields[formType].map((field) => (
+                <Input
+                  key={field.name}
+                  name={field.name}
+                  type={field.type}
+                  label={field.label}
+                  placeholder={field.placeholder}
+                  error={
+                    touched[field.name as keyof T]
+                      ? String(errors[field.name as keyof T])
+                      : undefined
+                  }
+                />
+              ))}
+              {mutation.error && (
+                <p className={styles.error}>
+                  {(() => {
+                    const errorMessage = mutation.error.message || "";
+                    if (errorMessage.includes("username")) {
+                      return "This username is already taken";
+                    }
+                    if (errorMessage.includes("email")) {
+                      return "This email is already registered";
+                    }
+                    if (errorMessage.includes("validation")) {
+                      return "Please check your information";
+                    }
+                    return formType === "login"
+                      ? "Invalid username or password"
+                      : "Registration failed. Please try again.";
+                  })()}
+                </p>
+              )}
+              <Button
+                type="submit"
+                disabled={isSubmitting || mutation.isPending}
+              >
+                {mutation.isPending
+                  ? `${
+                      formType === "login" ? "Logging in..." : "Registering..."
+                    }`
+                  : `${formType === "login" ? "Login" : "Register"}`}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+        <div className={styles.switchAuthMode}>
+          {formType === "login" ? (
+            <p>
+              Don't have an account?{" "}
+              <Link to="/register" className={styles.authLink}>
+                Sign up
+              </Link>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{" "}
+              <Link to="/login" className={styles.authLink}>
+                Sign in
+              </Link>
             </p>
           )}
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? `${formType === "login" ? "Logging in..." : "Registering..."}`
-              : `${formType === "login" ? "Login" : "Register"}`}
-          </Button>
-        </Form>
-      )}
-    </Formik>
+        </div>
+      </div>
+    </div>
   );
 };

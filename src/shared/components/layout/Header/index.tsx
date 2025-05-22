@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { RootState } from "../../../../app/store/rootReducer";
+
 import { setDrawerOpen } from "../../../../features/cart/slice";
 import { CartDrawer } from "../../../../features/cart";
 import { useCart } from "../../../../features/cart/hooks/useCart";
@@ -12,7 +12,7 @@ export const Header = () => {
   const { isAuthenticated } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+
   return (
     <>
       <header className={styles.header}>
