@@ -5,9 +5,9 @@
  * Features:
  * - Image gallery with product photos
  * - Product information (title, description, price)
- * - Product details (rating, stock)
+ * - Real-time stock levels from backend
  * - Color options
- * - Add to cart functionality
+ * - Add to cart functionality with backend validation
  * - Loading and error states
  */
 
@@ -23,16 +23,58 @@ import styles from "./styles.module.css";
 export const ProductDetail = () => {
   // Get product ID from URL parameters
   const { id } = useParams();
+  const productId = Number(id);
 
-  // Fetch product details and add item functionality
-  const { data: product, isLoading } = useProduct(Number(id));
-  const { addItem } = useCart();
+  // Fetch product details and cart functionality
+  const { data: product, isLoading } = useProduct(productId);
+  const { addItem, useStockCheck, isAddingItem, addItemError } = useCart();
+
+  // Real-time stok kontrolü
+  const {
+    data: stockData,
+    isLoading: isStockLoading,
+    error: stockError,
+    refetch: refetchStock,
+  } = useStockCheck(productId);
 
   // Show loading state while fetching product details
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return <div>Loading product...</div>;
+  }
 
   // Handle case where product is not found
   if (!product) return <div>Product not found</div>;
+
+  // Stok bilgileri
+  const currentStock = stockData?.currentStock || 0;
+  const isOutOfStock = !stockData?.available || currentStock === 0;
+  const isLowStock = currentStock > 0 && currentStock <= 5;
+  const canAdd = stockData?.available && !isAddingItem;
+
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    const mutation = addItem(productId);
+    // Success/error handling mutation'dan geliyor
+  };
+
+  // Stock status text and styling
+  const getStockStatus = () => {
+    if (isStockLoading) {
+      return { text: "Stok kontrol ediliyor...", className: styles.loading };
+    }
+    if (stockError) {
+      return { text: "Stok bilgisi alınamadı", className: styles.error };
+    }
+    if (isOutOfStock) {
+      return { text: "Stokta Yok", className: styles.outOfStock };
+    }
+    if (isLowStock) {
+      return { text: `Son ${currentStock} adet`, className: styles.lowStock };
+    }
+    return { text: `${currentStock} adet stokta`, className: styles.inStock };
+  };
+
+  const stockStatus = getStockStatus();
 
   return (
     <div className={styles.container}>
@@ -50,23 +92,68 @@ export const ProductDetail = () => {
         {/* Product details */}
         <div className={styles.details}>
           <span className={styles.rating}>Rating: {product.rating}</span>
-          <span className={styles.stock}>Stock: {product.stock}</span>
+          <span className={`${styles.stock} ${stockStatus.className}`}>
+            {stockStatus.text}
+          </span>
         </div>
 
-        {/* Color options */}
-        <div className={styles.colorOptions}>
-          <span className={styles.colorLabel}>Color:</span>
-          <span className={styles.color}>{product.color}</span>
-        </div>
+        {/* Stock error handling */}
+        {stockError && (
+          <div className={styles.stockError}>
+            Stok bilgisi alınamadı.{" "}
+            <button
+              onClick={() => refetchStock()}
+              className={styles.retryButton}
+            >
+              Tekrar dene
+            </button>
+          </div>
+        )}
+
+        {/* Low stock warning */}
+        {isLowStock && !isOutOfStock && (
+          <div className={styles.lowStockWarning}>⚠️ Az sayıda ürün kaldı!</div>
+        )}
+
+        {/* Add to cart error */}
+        {addItemError && (
+          <div className={styles.addToCartError}>❌ {addItemError.message}</div>
+        )}
+
+        {/* Color options (if available) */}
+        {product.color && (
+          <div className={styles.colorOptions}>
+            <span className={styles.colorLabel}>Color:</span>
+            <span className={styles.color}>{product.color}</span>
+          </div>
+        )}
 
         {/* Add to cart button */}
         <Button
           variant="primary"
           className={styles.addButtonMargin}
-          onClick={() => addItem(product.id)}
+          onClick={handleAddToCart}
+          disabled={!canAdd || isOutOfStock || isStockLoading}
         >
-          Add to Cart
+          {isAddingItem
+            ? "Sepete Ekleniyor..."
+            : isOutOfStock
+            ? "Stokta Yok"
+            : canAdd
+            ? "Sepete Ekle"
+            : "Stok Kontrol Ediliyor..."}
         </Button>
+
+        {/* Stock information */}
+        <div className={styles.stockInfo}>
+          <small>
+            {isOutOfStock
+              ? "Bu ürün şu anda stokta bulunmamaktadır."
+              : isStockLoading
+              ? "Stok bilgisi kontrol ediliyor..."
+              : `Bu üründen ${currentStock} adet mevcuttur.`}
+          </small>
+        </div>
       </div>
     </div>
   );

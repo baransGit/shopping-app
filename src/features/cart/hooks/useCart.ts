@@ -1,27 +1,30 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useMemo, useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { RootState } from "../../../app/store";
 import { useProducts } from "../../product/hooks/useProducts";
+import {
+  cartAPI,
+  AddToCartResponse,
+  UpdateQuantityResponse,
+} from "../api/cartApi";
 import { getCartItemWithDetails } from "../utils/helpers";
 import calculations from "../utils/calculations";
 
 import {
   setDrawerOpen,
-  addToCart,
+  addToCart as addToCartLocal,
   removeFromCart,
-  updateQuantity,
+  updateQuantity as updateQuantityLocal,
   clearItems,
 } from "../slice";
-import { formatCartSummary, formatQuantity } from "../utils/formatters";
-import { isValidQuantity } from "../utils/validators";
+import { formatCartSummary } from "../utils/formatters";
 
 export const useCart = () => {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { items, isDrawerOpen } = useSelector((state: RootState) => state.cart);
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
-
-  console.log("useCart - products loading:", isProductsLoading);
-  console.log("useCart - products data:", products);
 
   const subTotal = useMemo(
     () => calculations.calculateSubTotal(items, products),
@@ -30,27 +33,112 @@ export const useCart = () => {
 
   const itemCount = calculations.calculateTotalItems(items);
 
+  // Stok kontrolü query'si
+  const useStockCheck = (productId?: number) => {
+    return useQuery({
+      queryKey: ["stock", productId],
+      queryFn: () => cartAPI.checkStock(productId!),
+      enabled: !!productId,
+      staleTime: 10000, // 10 saniye
+      refetchInterval: 30000, // 30 saniyede bir güncelle
+    });
+  };
+
+  // Sepete ekleme mutation'ı
+  const addItemMutation = useMutation<AddToCartResponse, Error, number>({
+    mutationFn: (productId: number) =>
+      cartAPI.addToCart({ productId, quantity: 1 }),
+    onSuccess: (response, productId) => {
+      if (response.success) {
+        // Backend başarılı derse local state'i güncelle
+        dispatch(addToCartLocal(productId));
+        // Stok cache'ini güncelle
+        queryClient.invalidateQueries({ queryKey: ["stock", productId] });
+      }
+    },
+  });
+
+  // Miktar güncelleme mutation'ı
+  const updateQuantityMutation = useMutation<
+    UpdateQuantityResponse,
+    Error,
+    { productId: number; quantity: number }
+  >({
+    mutationFn: ({ productId, quantity }) =>
+      cartAPI.updateQuantity(productId, quantity),
+    onSuccess: (response, { productId }) => {
+      if (response.success) {
+        // Backend başarılı derse local state'i güncelle
+        dispatch(
+          updateQuantityLocal({ productId, quantity: response.newQuantity })
+        );
+        // Stok cache'ini güncelle
+        queryClient.invalidateQueries({ queryKey: ["stock", productId] });
+      }
+    },
+  });
+
+  // Ürün çıkarma mutation'ı
+  const removeItemMutation = useMutation<
+    { success: boolean; message?: string },
+    Error,
+    number
+  >({
+    mutationFn: (productId: number) => cartAPI.removeFromCart(productId),
+    onSuccess: (response, productId) => {
+      if (response.success) {
+        // Backend başarılı derse local state'i güncelle
+        dispatch(removeFromCart(productId));
+        // Stok cache'ini güncelle
+        queryClient.invalidateQueries({ queryKey: ["stock", productId] });
+      }
+    },
+  });
+
   return {
+    // State
     items,
     isOpen: isDrawerOpen,
     isLoading: isProductsLoading,
     subTotal,
     itemCount,
     cartSummary: formatCartSummary(itemCount),
-    getCartItemWithDetails: (productId: number) =>
-      getCartItemWithDetails(items, products, productId),
     products,
 
+    // Mutation states
+    isAddingItem: addItemMutation.isPending,
+    isUpdatingQuantity: updateQuantityMutation.isPending,
+    isRemovingItem: removeItemMutation.isPending,
+
+    // Helpers
+    getCartItemWithDetails: (productId: number) =>
+      getCartItemWithDetails(items, products, productId),
+    useStockCheck, // Component'te kullanmak için
+
+    // Actions
     openDrawer: () => dispatch(setDrawerOpen(true)),
     closeDrawer: () => dispatch(setDrawerOpen(false)),
-    addItem: (productId: number) => dispatch(addToCart(productId)),
 
-    removeItem: (productId: number) => dispatch(removeFromCart(productId)),
+    addItem: (productId: number) => {
+      addItemMutation.mutate(productId);
+      return addItemMutation;
+    },
+
+    removeItem: (productId: number) => {
+      removeItemMutation.mutate(productId);
+      return removeItemMutation;
+    },
+
     updateItemQuantity: (productId: number, quantity: number) => {
-      if (!isValidQuantity(quantity)) return;
-      dispatch(updateQuantity({ productId, quantity }));
+      updateQuantityMutation.mutate({ productId, quantity });
+      return updateQuantityMutation;
     },
 
     clearItems: () => dispatch(clearItems()),
+
+    // Error states
+    addItemError: addItemMutation.error,
+    updateQuantityError: updateQuantityMutation.error,
+    removeItemError: removeItemMutation.error,
   };
 };

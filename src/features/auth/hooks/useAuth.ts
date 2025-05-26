@@ -10,6 +10,12 @@ import {
 import { useNavigation } from "../../../shared/hooks/useNavigation";
 export const useAuth = () => {
   const navigation = useNavigation();
+
+  const { data: user, isLoading } = useQuery<User>({
+    queryKey: ["user"],
+    queryFn: () => authAPI.getCurrentUser(),
+    enabled: !!localStorage.getItem("token"),
+  });
   const login = useMutation<LoginResponse, Error, LoginCredentials>({
     mutationFn: (credentials) => authAPI.login(credentials),
     onSuccess: (data) => {
@@ -28,11 +34,7 @@ export const useAuth = () => {
       }
     },
   });
-  const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["user"],
-    queryFn: () => authAPI.getCurrentUser(),
-    enabled: !!localStorage.getItem("token"),
-  });
+
   const logout = useMutation({
     mutationFn: () => authAPI.logout(),
     onSuccess: () => {
