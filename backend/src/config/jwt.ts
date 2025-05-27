@@ -68,25 +68,45 @@ export const decodeToken = (token: string): JwtPayload | null => {
   }
 };
 // Security utility functions for token validation
-export const tokenSecurityChecks = {
-  // Check if token meets minimum security requirements
-  isSecure: (token: string): boolean => {
-    const decode = decodeToken(token);
-    if (!decode) return false;
-    // Validate issuer
-    if (decode.iss !== jwtConfig.issuer) return false;
-    if (decode.aud !== jwtConfig.audience) return false;
+export const tokenSecurityChecks = (token: string) => {
+  const decoded = decodeToken(token);
 
-    return true;
-  },
+  return {
+    isSecure: (): boolean => {
+      if (!decoded) return false;
+      // Validate issuer
+      if (decoded.iss !== jwtConfig.issuer) return false;
+      if (decoded.aud !== jwtConfig.audience) return false;
 
-  getTokenAge: (token: string): number => {
-    const decoded = decodeToken(token);
-    if (!decoded || !decoded.iat) return -1;
-    const now = Math.floor(Date.now() / 1000);
-    return now - decoded.iat;
-  },
-  getTimeToExpiry: (token: string): number => {
-    const decoded = decodeToken(token);
-  },
+      return true;
+    },
+
+    getTokenAge: (): number => {
+      if (!decoded || !decoded.iat) return -1;
+      const now = Math.floor(Date.now() / 1000);
+      return now - decoded.iat;
+    },
+
+    getTimeToExpiry: (): number => {
+      if (!decoded || !decoded.exp) return -1;
+      const now = Math.floor(Date.now() / 1000);
+      return decoded.exp - now;
+    },
+
+    isExpired: (): boolean => {
+      if (!decoded || !decoded.exp) return true;
+      const now = Math.floor(Date.now() / 1000);
+      return now >= decoded.exp;
+    },
+
+    getUserInfo: () => {
+      if (!decoded) return null;
+      return {
+        userId: decoded.userId,
+        email: decoded.email,
+      };
+    },
+
+    getRawPayload: () => decoded,
+  };
 };

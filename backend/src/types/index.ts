@@ -1,6 +1,9 @@
+import { JWTPayload } from "jose";
+
 // User related types
 export interface User {
   id: number;
+  username: string;
   email: string;
   password: string;
   firstName: string;
@@ -9,8 +12,10 @@ export interface User {
 }
 
 export interface CreateUserDto {
+  username: string;
   email: string;
   password: string;
+  confirmPassword: string;
   firstName: string;
   lastName: string;
 }
