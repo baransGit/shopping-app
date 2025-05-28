@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { generateToken } from "src/config/jwt";
+import { generateToken } from "../config/jwt";
 import {
   CreateUserDto,
   LoginDto,
@@ -10,7 +10,28 @@ import {
 
 // In-memory user storage (later replace with database)
 const users: User[] = [];
+const blackListedToken = new Set<string>();
 let userIdCounter = 1;
+
+// Add a test user for development
+const initializeTestUser = () => {
+  const testPassword = bcrypt.hashSync("Test123", 12);
+  const testUser: User = {
+    id: userIdCounter++,
+    username: "testuser",
+    email: "test@test.com",
+    firstName: "Test",
+    lastName: "User",
+    password: testPassword,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  users.push(testUser);
+  console.log("Test user created: test@test.com / Test123");
+};
+
+// Initialize test user
+initializeTestUser();
 
 /**
  * Register new user with hashed password
@@ -40,6 +61,7 @@ export const registerUser = async (
     lastName,
     password: hashedPassword,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
   users.push(newUser);
   const token = await generateToken({
@@ -49,9 +71,12 @@ export const registerUser = async (
 
   const userResponse: UserResponse = {
     id: newUser.id,
+    username: newUser.username,
     email: newUser.email,
     firstName: newUser.firstName,
     lastName: newUser.lastName,
+    createdAt: newUser.createdAt,
+    updatedAt: newUser.updatedAt,
   };
   return {
     message: "User registered successfully",
@@ -65,9 +90,64 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
 
   const userResponse: UserResponse = {
     id: user.id,
+    username: user.username,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
   return userResponse;
+};
+/**
+ * Login user with email and password
+ */
+export const loginUser = async (LoginData: LoginDto): Promise<AuthResponse> => {
+  const { username, password } = LoginData;
+
+  console.log("Looking for user with username/email:", username);
+  console.log(
+    "Current users in array:",
+    users.map((u) => ({ id: u.id, email: u.email, username: u.username }))
+  );
+
+  // Find user by email or username
+  const user = users.find(
+    (user) => user.email === username || user.username === username
+  );
+  if (!user) {
+    throw new Error("User not found");
+  }
+  // Check password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error("Invalid password");
+  }
+  // Generate JWT token
+  const token = await generateToken({ userId: user.id, email: user.email });
+
+  // Prepare user response (without password)
+
+  const userResponse: UserResponse = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+  return {
+    message: "Login successful",
+    user: userResponse,
+    token,
+  };
+};
+export const logoutUser = async (token: string): Promise<void> => {
+  blackListedToken.add(token);
+  console.log(`Token blacklisted: ${token.substring(0, 20)}...`);
+};
+
+export const isTokenBlacklisted = (token: string): boolean => {
+  return blackListedToken.has(token);
 };

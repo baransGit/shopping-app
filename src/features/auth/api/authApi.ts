@@ -8,20 +8,20 @@ import {
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    const { data } = await authApi.post("/auth/login", credentials);
+    const { data } = await authApi.post("/api/auth/login", credentials);
     return data;
   },
   getCurrentUser: async () => {
-    const { data } = await authApi.get("/auth/me");
+    const { data } = await authApi.get("/api/auth/me");
     return data;
   },
   logout: async () => {
-    await authApi.post("/auth/logout");
+    await authApi.post("/api/auth/logout");
   },
   register: async (
     credentials: RegisterCredentials
   ): Promise<RegisterResponse> => {
-    const { data } = await authApi.post("/auth/register", credentials);
+    const { data } = await authApi.post("/api/auth/register", credentials);
     return data;
   },
 };

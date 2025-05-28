@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigation } from "../../../hooks/useNavigation";
 import { setDrawerOpen } from "../../../../features/cart/slice";
 import { CartDrawer } from "../../../../features/cart";
 import { useCart } from "../../../../features/cart/hooks/useCart";
@@ -9,24 +8,32 @@ import styles from "./styles.module.css";
 
 export const Header = () => {
   const { itemCount } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const navigate = useNavigation();
 
   return (
     <>
       <header className={styles.header}>
-        <button onClick={() => navigate("/")} className={styles.logo}>
+        <button onClick={() => navigate.goToHome()} className={styles.logo}>
           Shopping App
         </button>
         <nav>
           {isAuthenticated && (
-            <button
-              onClick={() => dispatch(setDrawerOpen(true))}
-              className={styles.cartButton}
-            >
-              My Cart ({itemCount})
-            </button>
+            <>
+              <button
+                onClick={() => dispatch(setDrawerOpen(true))}
+                className={styles.cartButton}
+              >
+                My Cart ({itemCount})
+              </button>
+              <span
+                onClick={() => logout.mutate()}
+                className={styles.logoutButton}
+              >
+                Logout
+              </span>
+            </>
           )}
         </nav>
       </header>

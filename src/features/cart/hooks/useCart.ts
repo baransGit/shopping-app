@@ -33,32 +33,32 @@ export const useCart = () => {
 
   const itemCount = calculations.calculateTotalItems(items);
 
-  // Stok kontrolü query'si
+  // Stock check query
   const useStockCheck = (productId?: number) => {
     return useQuery({
       queryKey: ["stock", productId],
       queryFn: () => cartAPI.checkStock(productId!),
       enabled: !!productId,
-      staleTime: 10000, // 10 saniye
-      refetchInterval: 30000, // 30 saniyede bir güncelle
+      staleTime: 10000, // 10 seconds
+      refetchInterval: 30000, // Update every 30 seconds
     });
   };
 
-  // Sepete ekleme mutation'ı
+  // Add to cart mutation
   const addItemMutation = useMutation<AddToCartResponse, Error, number>({
     mutationFn: (productId: number) =>
       cartAPI.addToCart({ productId, quantity: 1 }),
     onSuccess: (response, productId) => {
       if (response.success) {
-        // Backend başarılı derse local state'i güncelle
+        // Update local state if backend is successful
         dispatch(addToCartLocal(productId));
-        // Stok cache'ini güncelle
+        // Update stock cache
         queryClient.invalidateQueries({ queryKey: ["stock", productId] });
       }
     },
   });
 
-  // Miktar güncelleme mutation'ı
+  // Update quantity mutation
   const updateQuantityMutation = useMutation<
     UpdateQuantityResponse,
     Error,
@@ -68,17 +68,17 @@ export const useCart = () => {
       cartAPI.updateQuantity(productId, quantity),
     onSuccess: (response, { productId }) => {
       if (response.success) {
-        // Backend başarılı derse local state'i güncelle
+        // Update local state if backend is successful
         dispatch(
           updateQuantityLocal({ productId, quantity: response.newQuantity })
         );
-        // Stok cache'ini güncelle
+        // Update stock cache
         queryClient.invalidateQueries({ queryKey: ["stock", productId] });
       }
     },
   });
 
-  // Ürün çıkarma mutation'ı
+  // Remove item mutation
   const removeItemMutation = useMutation<
     { success: boolean; message?: string },
     Error,
@@ -87,9 +87,9 @@ export const useCart = () => {
     mutationFn: (productId: number) => cartAPI.removeFromCart(productId),
     onSuccess: (response, productId) => {
       if (response.success) {
-        // Backend başarılı derse local state'i güncelle
+        // Update local state if backend is successful
         dispatch(removeFromCart(productId));
-        // Stok cache'ini güncelle
+        // Update stock cache
         queryClient.invalidateQueries({ queryKey: ["stock", productId] });
       }
     },
@@ -113,7 +113,7 @@ export const useCart = () => {
     // Helpers
     getCartItemWithDetails: (productId: number) =>
       getCartItemWithDetails(items, products, productId),
-    useStockCheck, // Component'te kullanmak için
+    useStockCheck, // For use in component
 
     // Actions
     openDrawer: () => dispatch(setDrawerOpen(true)),

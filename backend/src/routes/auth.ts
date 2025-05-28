@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { register, login, getCurrentUser } from "../controllers/authController";
+import {
+  register,
+  login,
+  getCurrentUser,
+  logout,
+} from "../controllers/authController";
 import { validateSchema } from "../middleware/validation";
+import { authenticateToken } from "../middleware/auth";
 import {
   validationRegisterSchema,
   validationLoginSchema,
-} from "../../../shared/validations/authSchemas";
+} from "../../../shared/validations/authSchemas.js";
 
 const router = Router();
 
@@ -23,10 +29,16 @@ router.post("/register", validateSchema(validationRegisterSchema), register);
 router.post("/login", validateSchema(validationLoginSchema), login);
 
 /**
+ * POST /auth/logout
+ * Logout user (requires JWT)
+ */
+router.post("/logout", authenticateToken, logout);
+
+/**
  * GET /auth/me
  * Get current user info (requires JWT)
  */
 
-router.get("/me", getCurrentUser);
+router.get("/me", authenticateToken, getCurrentUser);
 
 export default router;

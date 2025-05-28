@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../api/authApi";
 import {
   LoginCredentials,
@@ -10,6 +10,7 @@ import {
 import { useNavigation } from "../../../shared/hooks/useNavigation";
 export const useAuth = () => {
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ["user"],
@@ -39,6 +40,8 @@ export const useAuth = () => {
     mutationFn: () => authAPI.logout(),
     onSuccess: () => {
       localStorage.removeItem("token");
+      queryClient.clear();
+      navigation.goToLogin();
     },
   });
 

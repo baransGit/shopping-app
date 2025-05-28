@@ -38,8 +38,8 @@ export const BaseAuthForm = <T extends LoginCredentials | RegisterCredentials>({
       {
         name: "username",
         type: "text",
-        label: "Username",
-        placeholder: "Enter your username",
+        label: "Email or Username",
+        placeholder: "Enter your email or username",
       },
       {
         name: "password",
