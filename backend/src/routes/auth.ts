@@ -4,12 +4,14 @@ import {
   login,
   getCurrentUser,
   logout,
+  updateDetails,
 } from "../controllers/authController";
 import { validateSchema } from "../middleware/validation";
 import { authenticateToken } from "../middleware/auth";
 import {
   validationRegisterSchema,
   validationLoginSchema,
+  validationAccountDetailsSchema,
 } from "../../../shared/validations/authSchemas.js";
 
 const router = Router();
@@ -38,7 +40,12 @@ router.post("/logout", authenticateToken, logout);
  * GET /auth/me
  * Get current user info (requires JWT)
  */
-
+router.put(
+  "/update",
+  authenticateToken,
+  validateSchema(validationAccountDetailsSchema),
+  updateDetails
+);
 router.get("/me", authenticateToken, getCurrentUser);
 
 export default router;

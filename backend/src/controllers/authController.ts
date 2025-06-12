@@ -4,6 +4,7 @@ import {
   getUserById,
   loginUser,
   logoutUser,
+  updateUserDetails,
 } from "../services/authService";
 import { CreateUserDto, LoginDto } from "../types";
 
@@ -48,7 +49,27 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
-
+export const updateDetails = async (req: Request, res: Response) => {
+  console.log("🔵 UPDATE DETAILS ENDPOINT HIT");
+  console.log("📝 Request body:", req.body);
+  console.log("👤 User from token:", req.user);
+  try {
+    const userId = req.user?.userId;
+    if (userId === undefined) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized access" });
+    }
+    const updateData = req.body;
+    const updatedUser = await updateUserDetails(userId, updateData);
+    res.json({ success: true, user: updatedUser });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Update failed",
+    });
+  }
+};
 export const getCurrentUser = async (
   req: Request,
   res: Response

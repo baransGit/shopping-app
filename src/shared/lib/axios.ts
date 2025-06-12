@@ -1,4 +1,5 @@
 import axios from "axios";
+import { tokenManager } from "../utils/tokenManager";
 
 export const api = axios.create({
   baseURL: "https://dummyjson.com",
@@ -7,16 +8,18 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
 export const authApi = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
 authApi.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = tokenManager.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,6 +27,7 @@ authApi.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 authApi.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -31,7 +35,9 @@ authApi.interceptors.response.use(
     console.error("Error response data:", error.response?.data);
     console.error("Error status:", error.response?.status);
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
+      tokenManager.clearToken();
+      // Optional: Reload page or redirect to login page
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

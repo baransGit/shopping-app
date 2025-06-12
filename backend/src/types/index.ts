@@ -10,6 +10,7 @@ export interface User {
   lastName: string;
   createdAt: string;
   updatedAt: string;
+  dateOfBirth?: Date;
 }
 
 export interface CreateUserDto {
@@ -25,16 +26,15 @@ export interface LoginDto {
   username: string;
   password: string;
 }
-
-export interface UserResponse {
-  id: number;
-  username: string;
-  email: string;
+export interface UpdateDetailsDto {
   firstName: string;
   lastName: string;
-  createdAt: string;
+  email: string;
+  dateOfBirth: Date;
   updatedAt: string;
 }
+
+export type UserResponse = Omit<User, "password">;
 
 // JWT related types - Extend Jose's JWTPayload
 export interface JwtPayload extends JWTPayload {

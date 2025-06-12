@@ -5,9 +5,12 @@ import {
   LoginResponse,
   RegisterCredentials,
   RegisterResponse,
-  User,
+  UpdateDetailsCredentials,
+  UpdateDetailsResponse,
 } from "../types/auth";
+import { User } from "../../user/types";
 import { useNavigation } from "../../../shared/hooks/useNavigation";
+import { tokenManager } from "../../../shared/utils/tokenManager";
 export const useAuth = () => {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -15,13 +18,13 @@ export const useAuth = () => {
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ["user"],
     queryFn: () => authAPI.getCurrentUser(),
-    enabled: !!localStorage.getItem("token"),
+    enabled: tokenManager.hasToken(),
   });
   const login = useMutation<LoginResponse, Error, LoginCredentials>({
     mutationFn: (credentials) => authAPI.login(credentials),
     onSuccess: (data) => {
       if ("token" in data) {
-        localStorage.setItem("token", data.token);
+        tokenManager.setToken(data.token);
         navigation.goToHome();
       }
     },
@@ -30,7 +33,7 @@ export const useAuth = () => {
     mutationFn: (credentials) => authAPI.register(credentials),
     onSuccess: (data) => {
       if ("token" in data) {
-        localStorage.setItem("token", data.token);
+        tokenManager.setToken(data.token);
         navigation.goToHome();
       }
     },
@@ -39,10 +42,16 @@ export const useAuth = () => {
   const logout = useMutation({
     mutationFn: () => authAPI.logout(),
     onSuccess: () => {
-      localStorage.removeItem("token");
-      queryClient.clear();
+      tokenManager.clearAuth(queryClient);
       navigation.goToLogin();
     },
+  });
+  const updateDetails = useMutation<
+    UpdateDetailsResponse,
+    Error,
+    UpdateDetailsCredentials
+  >({
+    mutationFn: (credentials) => authAPI.updateDetails(credentials),
   });
 
   return {
@@ -50,6 +59,7 @@ export const useAuth = () => {
     register,
     logout,
     user,
+    updateDetails,
     isLoading,
     isAuthenticated: !!user,
   };

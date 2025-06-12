@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import * as Yup from "yup";
 
-import {
-  validationRegisterSchema,
-  validationLoginSchema,
-} from "../../../shared/validations/authSchemas";
-
 export const validateSchema = <T extends Record<string, any>>(
   schema: Yup.ObjectSchema<T>
 ) => {

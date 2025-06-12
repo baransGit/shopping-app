@@ -6,6 +6,7 @@ import {
   User,
   UserResponse,
   AuthResponse,
+  UpdateDetailsDto,
 } from "../types";
 
 // In-memory user storage (later replace with database)
@@ -41,15 +42,16 @@ export const registerUser = async (
   userData: CreateUserDto
 ): Promise<AuthResponse> => {
   const { username, email, password, firstName, lastName } = userData;
-  const existingUser = users.find(
-    (user) => user.email === email || user.username === username
-  );
-  if (existingUser) {
+  const emailExist = users.find((user) => user.email === email);
+  const usernameExist = users.find((user) => user.username === username);
+  if (emailExist && usernameExist) {
     throw new Error(
-      existingUser.email === email
-        ? "Email already exist"
-        : "Username already taken"
+      "Email and username  are already taken. Please choose another."
     );
+  } else if (emailExist) {
+    throw new Error("Email is already taken. Please choose another.");
+  } else if (usernameExist) {
+    throw new Error("Username is already taken. Please choose another.");
   }
   const saltRounds = 12;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -84,6 +86,126 @@ export const registerUser = async (
     token,
   };
 };
+
+/**
+ * Login user with email and password
+ */
+export const loginUser = async (userData: LoginDto): Promise<AuthResponse> => {
+  const { username, password } = userData;
+
+  console.log("🔍 Login attempt with username/email:", username);
+  console.log("🔍 Current users in array:");
+  users.forEach((u) => {
+    console.log(`  - ID: ${u.id}, Username: ${u.username}, Email: ${u.email}`);
+  });
+
+  // Find user by email or username
+  const user = users.find(
+    (user) => user.email === username || user.username === username
+  );
+
+  if (!user) {
+    console.log("❌ User not found with username/email:", username);
+    throw new Error("User not found");
+  }
+
+  console.log("✅ User found:", {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+  });
+
+  // Check password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    console.log("❌ Invalid password for user:", user.username);
+    throw new Error("Invalid password");
+  }
+
+  console.log("✅ Password valid, generating token...");
+
+  // Generate JWT token
+  const token = await generateToken({ userId: user.id, email: user.email });
+
+  console.log("✅ Token generated with email:", user.email);
+
+  // Prepare user response (without password)
+  const userResponse: UserResponse = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+
+  console.log("✅ Login successful for user:", userResponse.email);
+
+  return {
+    message: "Login successful",
+    user: userResponse,
+    token,
+  };
+};
+export const logoutUser = async (token: string): Promise<void> => {
+  blackListedToken.add(token);
+  console.log(`Token blacklisted: ${token.substring(0, 20)}...`);
+};
+export const updateUserDetails = async (
+  userId: number,
+  UpdateData: UpdateDetailsDto
+): Promise<UserResponse> => {
+  const { firstName, lastName, email, dateOfBirth, updatedAt } = UpdateData;
+
+  console.log("🔧 UPDATE USER DETAILS - userId:", userId);
+  console.log("🔧 UPDATE DATA:", UpdateData);
+
+  const user = users.find((user) => user.id === userId);
+  if (!user) {
+    console.log("❌ User not found with ID:", userId);
+    throw new Error("User not found");
+  }
+
+  console.log("📋 BEFORE UPDATE:", {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  });
+
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.email = email;
+  user.dateOfBirth = dateOfBirth;
+  user.updatedAt = new Date().toISOString();
+
+  console.log("📋 AFTER UPDATE:", {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  });
+
+  console.log("🔍 CURRENT USERS ARRAY:");
+  users.forEach((u) => {
+    console.log(`  - ID: ${u.id}, Email: ${u.email}, Username: ${u.username}`);
+  });
+
+  const userResponse: UserResponse = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    dateOfBirth: user.dateOfBirth,
+  };
+
+  console.log("✅ UPDATE COMPLETED, returning:", userResponse);
+  return userResponse;
+};
 export const getUserById = async (userId: number): Promise<UserResponse> => {
   const user = users.find((user) => user.id === userId);
   if (!user) throw new Error("User not found");
@@ -96,58 +218,10 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
     lastName: user.lastName,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    dateOfBirth: user.dateOfBirth,
   };
   return userResponse;
 };
-/**
- * Login user with email and password
- */
-export const loginUser = async (LoginData: LoginDto): Promise<AuthResponse> => {
-  const { username, password } = LoginData;
-
-  console.log("Looking for user with username/email:", username);
-  console.log(
-    "Current users in array:",
-    users.map((u) => ({ id: u.id, email: u.email, username: u.username }))
-  );
-
-  // Find user by email or username
-  const user = users.find(
-    (user) => user.email === username || user.username === username
-  );
-  if (!user) {
-    throw new Error("User not found");
-  }
-  // Check password
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    throw new Error("Invalid password");
-  }
-  // Generate JWT token
-  const token = await generateToken({ userId: user.id, email: user.email });
-
-  // Prepare user response (without password)
-
-  const userResponse: UserResponse = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
-  return {
-    message: "Login successful",
-    user: userResponse,
-    token,
-  };
-};
-export const logoutUser = async (token: string): Promise<void> => {
-  blackListedToken.add(token);
-  console.log(`Token blacklisted: ${token.substring(0, 20)}...`);
-};
-
 export const isTokenBlacklisted = (token: string): boolean => {
   return blackListedToken.has(token);
 };

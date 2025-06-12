@@ -7,8 +7,9 @@ interface InputProps {
   error?: string;
   type: "text" | "password" | "email";
   name: string;
-  placeholder: string;
+  placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -18,6 +19,7 @@ export const Input: React.FC<InputProps> = ({
   name,
   placeholder,
   className,
+  disabled = false,
 }: InputProps) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const checkboxId = `showPassword-${name}`;
@@ -31,6 +33,7 @@ export const Input: React.FC<InputProps> = ({
           name={name}
           type={showPassword ? "text" : type}
           placeholder={placeholder}
+          disabled={disabled}
           className={`${styles.input} ${error ? styles.error : ""} ${
             className || ""
           } `}
@@ -44,6 +47,7 @@ export const Input: React.FC<InputProps> = ({
             id={checkboxId}
             checked={showPassword}
             onChange={() => setShowPassword(!showPassword)}
+            disabled={disabled}
             className={styles.passwordToggle}
           />
           <label htmlFor={checkboxId} className={styles.passwordToggleLabel}>

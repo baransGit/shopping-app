@@ -28,4 +28,11 @@ export const ROUTES = {
   REGISTER: {
     LIST: "/register",
   },
+  ACCOUNT: {
+    ROOT: "/account",
+    DETAILS: "details",
+    CHANGE_PASSWORD: "changePassword",
+    ADDRESS_BOOK: "addressBook",
+    PAYMENT_METHODS: "paymentMethods",
+  },
 } as const;

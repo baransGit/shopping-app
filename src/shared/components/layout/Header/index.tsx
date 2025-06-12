@@ -8,7 +8,7 @@ import styles from "./styles.module.css";
 
 export const Header = () => {
   const { itemCount } = useCart();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigation();
 
@@ -28,10 +28,10 @@ export const Header = () => {
                 My Cart ({itemCount})
               </button>
               <span
-                onClick={() => logout.mutate()}
+                onClick={() => navigate.goToAccount()}
                 className={styles.logoutButton}
               >
-                Logout
+                Hello {user?.firstName}
               </span>
             </>
           )}

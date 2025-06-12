@@ -32,5 +32,6 @@ export const useNavigation = () => {
       ),
     goToLogin: () => navigate(ROUTES.LOGIN.LIST),
     goToRegister: () => navigate(ROUTES.REGISTER.LIST),
+    goToAccount: () => navigate(ROUTES.ACCOUNT.ROOT),
   };
 };

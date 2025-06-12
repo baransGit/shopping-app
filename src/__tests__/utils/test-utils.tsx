@@ -22,7 +22,7 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Custom render fonksiyonu
+// Custom render function
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">

@@ -84,7 +84,7 @@ function longestPalindrom(s: string): string {
   let start = 0;
   let maxLength = 1;
 
-  // Her karakterden iki yöne doğru genişleme fonksiyonui
+  // Function to expand in both directions from each character
   function expandAroundCenter(left: number, right: number): void {
     while (left >= 0 && right < s.length && s[left] === s[right]) {
       const currentLength = right - left + 1;

@@ -40,3 +40,6 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+.logoutButton:hover {
+  background-color: #c82333;
+}

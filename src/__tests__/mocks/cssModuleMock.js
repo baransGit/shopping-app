@@ -1,15 +1,10 @@
-// CSS modül mockları için proxy
-const cssModuleMock = new Proxy(
+// Proxy for CSS module mocks
+module.exports = new Proxy(
   {},
   {
-    get: function (target, key) {
-      if (key === "__esModule") {
-        return true;
-      }
-      // Özellik adını direkt olarak döndürüyoruz
-      return key;
+    get: function (target, property) {
+      // Return the property name directly
+      return property;
     },
   }
 );
-
-module.exports = cssModuleMock;
