@@ -5,8 +5,6 @@ import {
   LoginResponse,
   RegisterCredentials,
   RegisterResponse,
-  UpdateDetailsCredentials,
-  UpdateDetailsResponse,
 } from "../types/auth";
 import { User } from "../../user/types";
 import { useNavigation } from "../../../shared/hooks/useNavigation";
@@ -46,20 +44,13 @@ export const useAuth = () => {
       navigation.goToLogin();
     },
   });
-  const updateDetails = useMutation<
-    UpdateDetailsResponse,
-    Error,
-    UpdateDetailsCredentials
-  >({
-    mutationFn: (credentials) => authAPI.updateDetails(credentials),
-  });
 
   return {
     login,
     register,
     logout,
     user,
-    updateDetails,
+
     isLoading,
     isAuthenticated: !!user,
   };

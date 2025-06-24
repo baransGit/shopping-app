@@ -33,5 +33,10 @@ export const useNavigation = () => {
     goToLogin: () => navigate(ROUTES.LOGIN.LIST),
     goToRegister: () => navigate(ROUTES.REGISTER.LIST),
     goToAccount: () => navigate(ROUTES.ACCOUNT.ROOT),
+    goToAddAddress: () => navigate(ROUTES.ACCOUNT.ADDRESS_BOOK.ADD),
+    goToEditAddress: (addressId: string) =>
+      navigate(
+        ROUTES.ACCOUNT.ADDRESS_BOOK.EDIT.replace(":addressId", addressId)
+      ),
   };
 };

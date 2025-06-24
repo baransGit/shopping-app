@@ -11,6 +11,21 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   dateOfBirth?: Date;
+  addressBook?: UserAddress[];
+}
+export interface UserAddress {
+  id: string;
+  name: string;
+  surname: string;
+  address: string;
+  suburb: string;
+  state: string;
+  postCode: number;
+}
+export interface AddressResponse {
+  success: boolean;
+  message: string;
+  address: UserAddress;
 }
 
 export interface CreateUserDto {
@@ -64,6 +79,10 @@ export interface StockResponse {
   maxAddableToCart: number;
   message?: string;
   lastUpdated: string;
+}
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
 }
 
 // Request extensions

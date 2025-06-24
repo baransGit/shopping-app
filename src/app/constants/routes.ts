@@ -32,7 +32,11 @@ export const ROUTES = {
     ROOT: "/account",
     DETAILS: "details",
     CHANGE_PASSWORD: "changePassword",
-    ADDRESS_BOOK: "addressBook",
+    ADDRESS_BOOK: {
+      ROOT: "addressBook",
+      ADD: "add",
+      EDIT: ":addressId",
+    },
     PAYMENT_METHODS: "paymentMethods",
   },
 } as const;

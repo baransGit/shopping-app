@@ -1,4 +1,4 @@
-import { User, AccountDetails } from "../../user/types";
+import { User } from "../../user/types";
 
 export interface RegisterCredentials {
   username: string;
@@ -13,7 +13,6 @@ export interface LoginCredentials {
   username: string;
   password: string;
 }
-export type UpdateDetailsCredentials = Omit<AccountDetails, "updatedAt">;
 
 export interface AuthError {
   field: string;
@@ -32,8 +31,6 @@ export interface AuthSuccessResponse {
   token: string;
   message?: string;
 }
-//Update details doesnt return token, so we omit
-export type UpdateDetailsSuccessResponse = Omit<AuthSuccessResponse, "token">;
 
 export type LoginResponse = AuthSuccessResponse | AuthErrorResponse;
 export type RegisterResponse = AuthSuccessResponse | AuthErrorResponse;

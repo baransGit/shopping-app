@@ -140,3 +140,114 @@ function calculateFactorial(num: number): number {
 function main() {
   console.log(calculateFactorial(5));
 }
+
+function activityNotifications(expenditure: number[], d: number): number {
+  let notifications = 0;
+  const counts = new Array(201).fill(0); // Array for numbers between 0-200
+
+  // STEP 1: Count the first d days
+  console.log("Initial state - counts:", counts);
+
+  for (let i = 0; i < d; i++) {
+    counts[expenditure[i]]++; // Increment frequency of each number
+    console.log(
+      `Day ${i + 1}: For number ${expenditure[i]}, counts[${
+        expenditure[i]
+      }] = ${counts[expenditure[i]]}`
+    );
+  }
+
+  console.log("Counts after first d days:", counts);
+
+  // STEP 2: Continue with sliding window
+  for (let i = d; i < expenditure.length; i++) {
+    const median = getMedian(counts, d);
+
+    if (expenditure[i] >= median * 2) {
+      notifications++;
+    }
+
+    // Sliding window update:
+    console.log(`\nDay ${i + 1} sliding window update:`);
+    console.log(`Removed: expenditure[${i - d}] = ${expenditure[i - d]}`);
+    counts[expenditure[i - d]]--; // Remove oldest day
+    console.log(`Added: expenditure[${i}] = ${expenditure[i]}`);
+    counts[expenditure[i]]++; // Add new day
+  }
+
+  return notifications;
+}
+
+// Median calculation function
+function getMedian(counts: number[], d: number): number {
+  let count = 0;
+
+  // Even number of days
+  if (d % 2 === 0) {
+    let first = -1;
+    let second = -1;
+
+    for (let i = 0; i < counts.length; i++) {
+      count += counts[i];
+      if (first === -1 && count >= d / 2) first = i;
+      if (second === -1 && count >= d / 2 + 1) {
+        second = i;
+        return (first + second) / 2;
+      }
+    }
+  }
+  // Odd number of days
+  else {
+    const target = Math.floor(d / 2) + 1;
+    for (let i = 0; i < counts.length; i++) {
+      count += counts[i];
+      if (count >= target) {
+        return i;
+      }
+    }
+  }
+  return 0;
+}
+
+console.log("\nExample 1 - Activity Notifications:");
+const expenditure1 = [2, 3, 4, 2, 3, 6, 8, 4, 5];
+const d1 = 5;
+console.log("Input:", expenditure1, "d =", d1);
+console.log("Output:", activityNotifications(expenditure1, d1));
+
+console.log("\nExample 2 - Activity Notifications:");
+const expenditure2 = [1, 2, 3, 4, 4];
+const d2 = 4;
+console.log("Input:", expenditure2, "d =", d2);
+console.log("Output:", activityNotifications(expenditure2, d2));
+
+console.log("\nExample 3 - Repeating numbers:");
+
+// Example of finding median using counting sort
+function findMedianExample(arr: number[]): number {
+  // Create counting array
+  const counts = new Array(201).fill(0);
+
+  // Count frequencies
+  for (const num of arr) {
+    counts[num]++;
+  }
+
+  // Find median
+  const target = Math.floor(arr.length / 2);
+  let count = 0;
+
+  for (let i = 0; i < counts.length; i++) {
+    count += counts[i];
+    if (count > target) {
+      return i;
+    }
+  }
+
+  return 0;
+}
+
+// Example usage
+const arr = [1, 2, 3, 4, 5];
+console.log("Input array:", arr);
+console.log("Median:", findMedianExample(arr));

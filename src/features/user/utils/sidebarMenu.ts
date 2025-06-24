@@ -28,7 +28,7 @@ export const accountSidebarMenu: SidebarMenuItem[] = [
   },
   {
     label: "Address Book",
-    to: ROUTES.ACCOUNT.ADDRESS_BOOK,
+    to: ROUTES.ACCOUNT.ADDRESS_BOOK.ROOT,
     icon: FaAddressBook,
   },
   {

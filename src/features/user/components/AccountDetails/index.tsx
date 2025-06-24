@@ -1,27 +1,20 @@
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Box, Heading, Stack, Input, Button, Text } from "@chakra-ui/react";
+import { Box, Heading, Stack, Button } from "@chakra-ui/react";
 import { toaster } from "../../../../components/ui/toaster";
 import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { validationAccountDetailsSchema } from "../../../../../shared/validations/authSchemas";
-import { AccountDetails } from "../../types";
+import { AccountDetailsCredentials } from "../../types";
 import { TextField } from "../../../../shared/components/custom-components-chakra/TextField";
 import { DateField } from "../../../../shared/components/custom-components-chakra/DateField";
 import { useAuth } from "../../../auth/hooks/useAuth";
-
+import { useUserProfile } from "../../hooks/useUser";
 export const AccountDetailsForm = () => {
-  const { updateDetails, user } = useAuth();
+  const { updateDetails } = useUserProfile();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-
-  console.log("🔍 Current user data:", user);
-  console.log("🔍 User FULL data:", JSON.stringify(user, null, 2));
-  console.log(
-    "🔍 User dateOfBirth:",
-    user?.dateOfBirth,
-    typeof user?.dateOfBirth
-  );
 
   const {
     register,
@@ -29,7 +22,7 @@ export const AccountDetailsForm = () => {
     control,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<AccountDetails>({
+  } = useForm<AccountDetailsCredentials>({
     resolver: yupResolver(validationAccountDetailsSchema),
     defaultValues: {
       firstName: user?.firstName || "",
@@ -51,7 +44,7 @@ export const AccountDetailsForm = () => {
     }
   }, [user, reset]);
 
-  const onSubmit = (data: AccountDetails) => {
+  const onSubmit = (data: AccountDetailsCredentials) => {
     updateDetails.mutateAsync(data, {
       onSuccess: () => {
         toaster.create({

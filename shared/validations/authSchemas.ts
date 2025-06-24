@@ -70,3 +70,27 @@ export const validationAccountDetailsSchema = Yup.object({
       return value <= minAgeDate;
     }),
 });
+
+export const validationChangePasswordSchema = Yup.object({
+  currentPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .required(" Current password is required"),
+  newPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .required("New password is required")
+    .test(
+      "different-from-current",
+      "New password must be different from current password",
+      function (value) {
+        return value !== this.parent.currentPassword;
+      }
+    ),
+
+  confirmNewPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword")], "New passwords must match")
+    .required("Confirm new password is required"),
+});

@@ -1,20 +1,19 @@
 import { Request, Response } from "express";
 import {
-  registerUser,
-  getUserById,
-  loginUser,
-  logoutUser,
-  updateUserDetails,
+  registerUserService,
+  loginUserService,
+  logoutUserService,
 } from "../services/authService";
+import { getUserById } from "../services/userService";
 import { CreateUserDto, LoginDto } from "../types";
 
 /**
  * Register new user
  */
-export const register = async (req: Request, res: Response) => {
+export const registerController = async (req: Request, res: Response) => {
   try {
     const userData: CreateUserDto = req.body;
-    const result = await registerUser(userData);
+    const result = await registerUserService(userData);
     res.status(201).json({
       success: true,
       ...result,
@@ -26,14 +25,15 @@ export const register = async (req: Request, res: Response) => {
     });
   }
 };
+
 /**
- * Login user (placeholder - will implement later)
+ * Login user
  */
-export const login = async (req: Request, res: Response) => {
+export const loginController = async (req: Request, res: Response) => {
   try {
     const loginData: LoginDto = req.body;
     console.log("Login attempt with:", loginData);
-    const result = await loginUser(loginData);
+    const result = await loginUserService(loginData);
     res.status(200).json({
       success: true,
       ...result,
@@ -49,58 +49,14 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
-export const updateDetails = async (req: Request, res: Response) => {
-  console.log("🔵 UPDATE DETAILS ENDPOINT HIT");
-  console.log("📝 Request body:", req.body);
-  console.log("👤 User from token:", req.user);
-  try {
-    const userId = req.user?.userId;
-    if (userId === undefined) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized access" });
-    }
-    const updateData = req.body;
-    const updatedUser = await updateUserDetails(userId, updateData);
-    res.json({ success: true, user: updatedUser });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Update failed",
-    });
-  }
-};
-export const getCurrentUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.user?.userId; // Assuming userId is set in the request by auth middleware
-    if (!userId) {
-      res.status(401).json({
-        success: false,
-        message: "Unauthorized access",
-      });
-      return;
-    }
-
-    const user = await getUserById(userId);
-    res.json({
-      success: true,
-      user,
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: error instanceof Error ? error.message : "User not found",
-    });
-  }
-};
 
 /**
  * Logout user
  */
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logoutController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
     if (!token) {
@@ -111,7 +67,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await logoutUser(token);
+    await logoutUserService(token);
     res.json({
       success: true,
       message: "Logout successful",

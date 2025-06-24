@@ -14,7 +14,11 @@ import { RegisterPage } from "../features/auth/pages/RegisterPage";
 
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { AccountDetailsForm } from "../features/user/components/AccountDetails";
+import { ChangePasswordForm } from "../features/user/components/ChangePassword";
 import { AccountPage } from "../features/user/pages/AccountPage";
+import { AddressBook } from "../features/user/components/AddressBook";
+import { AddressForm } from "../features/user/components/AddressBook/AddressForm";
+
 const PrivateRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
   console.log("🚪 PrivateRoutes Debug:", { isAuthenticated, isLoading });
@@ -60,16 +64,33 @@ const router = createBrowserRouter([
             element: <AccountPage />,
             children: [
               {
+                index: true,
+                element: <Navigate to={ROUTES.ACCOUNT.DETAILS} />,
+              },
+              {
                 path: ROUTES.ACCOUNT.DETAILS,
                 element: <AccountDetailsForm />,
               },
               {
                 path: ROUTES.ACCOUNT.CHANGE_PASSWORD,
-                element: <p>to be added</p>,
+                element: <ChangePasswordForm />,
               },
               {
-                index: true,
-                element: <Navigate to="details" />,
+                path: ROUTES.ACCOUNT.ADDRESS_BOOK.ROOT,
+                children: [
+                  {
+                    index: true,
+                    element: <AddressBook />,
+                  },
+                  {
+                    path: ROUTES.ACCOUNT.ADDRESS_BOOK.ADD,
+                    element: <AddressForm />,
+                  },
+                  {
+                    path: ROUTES.ACCOUNT.ADDRESS_BOOK.EDIT,
+                    element: <AddressForm />,
+                  },
+                ],
               },
             ],
           },

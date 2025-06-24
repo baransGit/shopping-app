@@ -3,14 +3,13 @@ import { generateToken } from "../config/jwt";
 import {
   CreateUserDto,
   LoginDto,
-  User,
   UserResponse,
   AuthResponse,
-  UpdateDetailsDto,
+  User,
 } from "../types";
 
 // In-memory user storage (later replace with database)
-const users: User[] = [];
+export const users: User[] = [];
 const blackListedToken = new Set<string>();
 let userIdCounter = 1;
 
@@ -24,6 +23,7 @@ const initializeTestUser = () => {
     firstName: "Test",
     lastName: "User",
     password: testPassword,
+    addressBook: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -37,35 +37,30 @@ initializeTestUser();
 /**
  * Register new user with hashed password
  */
+export const registerUserService = async (userData: CreateUserDto) => {
+  const { email, password } = userData;
 
-export const registerUser = async (
-  userData: CreateUserDto
-): Promise<AuthResponse> => {
-  const { username, email, password, firstName, lastName } = userData;
-  const emailExist = users.find((user) => user.email === email);
-  const usernameExist = users.find((user) => user.username === username);
-  if (emailExist && usernameExist) {
-    throw new Error(
-      "Email and username  are already taken. Please choose another."
-    );
-  } else if (emailExist) {
-    throw new Error("Email is already taken. Please choose another.");
-  } else if (usernameExist) {
-    throw new Error("Username is already taken. Please choose another.");
+  // Check if user already exists
+  const existingUser = users.find((u) => u.email === email);
+  if (existingUser) {
+    throw new Error("User already exists");
   }
-  const saltRounds = 12;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  // Create new user
   const newUser: User = {
     id: userIdCounter++,
-    username,
-    email,
-    firstName,
-    lastName,
+    ...userData,
     password: hashedPassword,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
+
   users.push(newUser);
+
+  // Generate JWT token
   const token = await generateToken({
     userId: newUser.id,
     email: newUser.email,
@@ -80,56 +75,38 @@ export const registerUser = async (
     createdAt: newUser.createdAt,
     updatedAt: newUser.updatedAt,
   };
+
   return {
-    message: "User registered successfully",
-    user: userResponse,
+    message: "Registration successful",
     token,
+    user: userResponse,
   };
 };
 
 /**
  * Login user with email and password
  */
-export const loginUser = async (userData: LoginDto): Promise<AuthResponse> => {
-  const { username, password } = userData;
+export const loginUserService = async (loginData: LoginDto) => {
+  const { username, password } = loginData;
 
-  console.log("🔍 Login attempt with username/email:", username);
-  console.log("🔍 Current users in array:");
-  users.forEach((u) => {
-    console.log(`  - ID: ${u.id}, Username: ${u.username}, Email: ${u.email}`);
-  });
-
-  // Find user by email or username
-  const user = users.find(
-    (user) => user.email === username || user.username === username
-  );
-
+  // Find user by username
+  const user = users.find((u) => u.username === username);
   if (!user) {
-    console.log("❌ User not found with username/email:", username);
-    throw new Error("User not found");
+    throw new Error("Invalid credentials");
   }
 
-  console.log("✅ User found:", {
-    id: user.id,
-    username: user.username,
+  // Check password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  // Generate JWT token
+  const token = await generateToken({
+    userId: user.id,
     email: user.email,
   });
 
-  // Check password
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    console.log("❌ Invalid password for user:", user.username);
-    throw new Error("Invalid password");
-  }
-
-  console.log("✅ Password valid, generating token...");
-
-  // Generate JWT token
-  const token = await generateToken({ userId: user.id, email: user.email });
-
-  console.log("✅ Token generated with email:", user.email);
-
-  // Prepare user response (without password)
   const userResponse: UserResponse = {
     id: user.id,
     username: user.username,
@@ -139,89 +116,19 @@ export const loginUser = async (userData: LoginDto): Promise<AuthResponse> => {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
-
-  console.log("✅ Login successful for user:", userResponse.email);
 
   return {
     message: "Login successful",
-    user: userResponse,
     token,
+    user: userResponse,
   };
 };
-export const logoutUser = async (token: string): Promise<void> => {
+
+export const logoutUserService = async (token: string) => {
   blackListedToken.add(token);
-  console.log(`Token blacklisted: ${token.substring(0, 20)}...`);
+  return true;
 };
-export const updateUserDetails = async (
-  userId: number,
-  UpdateData: UpdateDetailsDto
-): Promise<UserResponse> => {
-  const { firstName, lastName, email, dateOfBirth, updatedAt } = UpdateData;
 
-  console.log("🔧 UPDATE USER DETAILS - userId:", userId);
-  console.log("🔧 UPDATE DATA:", UpdateData);
-
-  const user = users.find((user) => user.id === userId);
-  if (!user) {
-    console.log("❌ User not found with ID:", userId);
-    throw new Error("User not found");
-  }
-
-  console.log("📋 BEFORE UPDATE:", {
-    id: user.id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-  });
-
-  user.firstName = firstName;
-  user.lastName = lastName;
-  user.email = email;
-  user.dateOfBirth = dateOfBirth;
-  user.updatedAt = new Date().toISOString();
-
-  console.log("📋 AFTER UPDATE:", {
-    id: user.id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-  });
-
-  console.log("🔍 CURRENT USERS ARRAY:");
-  users.forEach((u) => {
-    console.log(`  - ID: ${u.id}, Email: ${u.email}, Username: ${u.username}`);
-  });
-
-  const userResponse: UserResponse = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    dateOfBirth: user.dateOfBirth,
-  };
-
-  console.log("✅ UPDATE COMPLETED, returning:", userResponse);
-  return userResponse;
-};
-export const getUserById = async (userId: number): Promise<UserResponse> => {
-  const user = users.find((user) => user.id === userId);
-  if (!user) throw new Error("User not found");
-
-  const userResponse: UserResponse = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    dateOfBirth: user.dateOfBirth,
-  };
-  return userResponse;
-};
 export const isTokenBlacklisted = (token: string): boolean => {
   return blackListedToken.has(token);
 };
