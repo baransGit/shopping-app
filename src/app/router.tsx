@@ -11,7 +11,7 @@ import { ProductDetail } from "../features/product/pages/ProductDetail";
 import { CategoryList } from "../features/category/components/CategoryList";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { RegisterPage } from "../features/auth/pages/RegisterPage";
-
+import { PaymentMethodsForm } from "../features/user/components/PaymentMethods";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { AccountDetailsForm } from "../features/user/components/AccountDetails";
 import { ChangePasswordForm } from "../features/user/components/ChangePassword";
@@ -91,6 +91,10 @@ const router = createBrowserRouter([
                     element: <AddressForm />,
                   },
                 ],
+              },
+              {
+                path: ROUTES.ACCOUNT.PAYMENT_METHODS,
+                element: <PaymentMethodsForm />,
               },
             ],
           },

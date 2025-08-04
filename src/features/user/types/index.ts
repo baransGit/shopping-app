@@ -22,7 +22,7 @@ export type UpdateDetailsCredentials = Omit<
 >;
 
 export interface UserAddress {
-  id: string;
+  id?: string;
   fullName: string;
   street: string;
   city: string;
